@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Coursify — Learn Anything, Anytime{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>
+                    Learn Without<br>
+                    <span>Limits</span> — Grow<br>
+                    Your Skills
+                </h1>
+                <p>
+                    Access thousands of expert-led courses in development, design, business, and more.
+                    Start learning today and transform your career.
+                </p>
+                <div class="hero-actions">
+                    <a href="/courses/" class="btn btn-primary btn-lg">
+                        Explore Courses →
+                    </a>
+                    <a href="/register/" class="btn btn-secondary btn-lg">
+                        Start Free
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <h3>10K+</h3>
+                        <p>Active Students</p>
+                    </div>
+                    <div class="hero-stat">
+                        <h3>500+</h3>
+                        <p>Expert Courses</p>
+                    </div>
+                    <div class="hero-stat">
+                        <h3>4.8★</h3>
+                        <p>Average Rating</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-illustration">
+                <div class="hero-card">
+                    <div style="background: var(--primary-100); border-radius: var(--radius-lg); height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-lg);">
+                        <span style="font-size: 4rem;">🎓</span>
+                    </div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Web Development Masterclass</h3>
+                    <p style="color: var(--gray-500); font-size: 0.875rem; margin-bottom: 1rem;">Master modern web development with HTML, CSS, JavaScript, React & Node.js</p>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div class="star-rating">
+                            <span>⭐⭐⭐⭐⭐</span>
+                            <span class="count">4.9</span>
+                        </div>
+                        <span style="font-weight: 800; color: var(--primary-600);">$49.99</span>
+                    </div>
+                </div>
+                <div class="floating-badge badge-1">
+                    <span style="color: var(--primary-500); font-size: 1.25rem;">✓</span>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.8125rem;">Course Completed!</div>
+                        <div style="font-size: 0.6875rem; color: var(--gray-500);">Certificate Earned</div>
+                    </div>
+                </div>
+                <div class="floating-badge badge-2">
+                    <span style="font-size: 1.25rem;">🔥</span>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.8125rem;">2,450 Enrolled</div>
+                        <div style="font-size: 0.6875rem; color: var(--gray-500);">This Month</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Category Pills -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="tag">Browse Categories</span>
+            <h2>Explore Our Top Categories</h2>
+            <p>Find the perfect course for your career goals</p>
+        </div>
+        <div class="category-pills">
+            <button class="pill active" onclick="filterCategory('all')">All Courses</button>
+            <button class="pill" onclick="filterCategory('development')">💻 Development</button>
+            <button class="pill" onclick="filterCategory('design')">🎨 Design</button>
+            <button class="pill" onclick="filterCategory('business')">📊 Business</button>
+            <button class="pill" onclick="filterCategory('marketing')">📢 Marketing</button>
+            <button class="pill" onclick="filterCategory('music')">🎵 Music</button>
+            <button class="pill" onclick="filterCategory('photography')">📷 Photography</button>
+            <button class="pill" onclick="filterCategory('health')">💪 Health</button>
+        </div>
+
+        <!-- Featured Courses Grid -->
+        <div class="grid grid-3" id="featuredCourses">
+            <!-- Courses loaded dynamically -->
+            <div class="empty-state" id="coursesLoading">
+                <div class="empty-icon">📚</div>
+                <h3>Loading courses...</h3>
+                <p>Discovering the best courses for you</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section" style="background: white;">
+    <div class="container">
+        <div class="section-header">
+            <span class="tag">Why Coursify?</span>
+            <h2>Everything You Need to Succeed</h2>
+            <p>Our platform offers the tools and features to make your learning journey seamless</p>
+        </div>
+        <div class="grid grid-4">
+            <div class="feature-card animate-in">
+                <div class="feature-icon">🎥</div>
+                <h3>HD Video Lessons</h3>
+                <p>Crystal clear video content with progress tracking and resume playback</p>
+            </div>
+            <div class="feature-card animate-in">
+                <div class="feature-icon">📝</div>
+                <h3>Interactive Quizzes</h3>
+                <p>Test your knowledge with MCQ quizzes after each lesson to reinforce learning</p>
+            </div>
+            <div class="feature-card animate-in">
+                <div class="feature-icon">📊</div>
+                <h3>Progress Tracking</h3>
+                <p>Visual progress bars and completion stats to keep you on track</p>
+            </div>
+            <div class="feature-card animate-in">
+                <div class="feature-icon">🏆</div>
+                <h3>Certificates</h3>
+                <p>Earn verified certificates upon course completion to showcase your skills</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section">
+    <div class="container">
+        <div class="cta-section">
+            <h2>Ready to Start Learning?</h2>
+            <p>Join thousands of students already learning on Coursify. Start for free today!</p>
+            <a href="/register/" class="btn btn-primary btn-lg">
+                Get Started Free →
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadFeaturedCourses();
+});
+
+async function loadFeaturedCourses() {
+    try {
+        const response = await fetch('/api/courses/?page_size=6');
+        if (response.ok) {
+            const data = await response.json();
+            const courses = data.results || data;
+            const grid = document.getElementById('featuredCourses');
+            
+            if (courses.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-icon">📚</div>
+                        <h3>No courses yet</h3>
+                        <p>Courses will appear here once instructors publish them</p>
+                        <a href="/register/" class="btn btn-primary">Become an Instructor</a>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = courses.map(course => createCourseCard(course)).join('');
+        } else {
+            document.getElementById('featuredCourses').innerHTML = `
+                <div class="empty-state" style="grid-column: 1/-1;">
+                    <div class="empty-icon">📚</div>
+                    <h3>Welcome to Coursify!</h3>
+                    <p>Start by creating an account and exploring our platform</p>
+                    <a href="/register/" class="btn btn-primary">Get Started</a>
+                </div>
+            `;
+        }
+    } catch (err) {
+        document.getElementById('featuredCourses').innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1;">
+                <div class="empty-icon">🚀</div>
+                <h3>Welcome to Coursify!</h3>
+                <p>Your learning journey starts here</p>
+                <a href="/register/" class="btn btn-primary">Sign Up Now</a>
+            </div>
+        `;
+    }
+}
+
+function filterCategory(category) {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    const url = category === 'all' 
+        ? '/api/courses/?page_size=6' 
+        : `/api/courses/?category=${category}&page_size=6`;
+    
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            const courses = data.results || data;
+            const grid = document.getElementById('featuredCourses');
+            if (courses.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-icon">🔍</div>
+                        <h3>No courses found</h3>
+                        <p>Try a different category</p>
+                    </div>
+                `;
+            } else {
+                grid.innerHTML = courses.map(course => createCourseCard(course)).join('');
+            }
+        })
+        .catch(() => {});
+}
+</script>
+{% endblock %}

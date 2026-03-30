@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Course Detail — Coursify{% endblock %}
+{% block nav_courses %}active{% endblock %}
+
+{% block content %}
+<!-- Course Hero (filled dynamically) -->
+<div class="course-hero" id="courseHero">
+    <div class="container">
+        <div style="max-width: 700px;">
+            <span class="tag" id="courseCategory" style="background: rgba(255,255,255,0.2); color: white;">Loading...</span>
+            <h1 id="courseTitle">Loading Course...</h1>
+            <p id="courseDescription">Please wait while we load the course details.</p>
+            <div class="course-hero-meta">
+                <span id="courseInstructor">👤 --</span>
+                <span id="courseRating">⭐ --</span>
+                <span id="courseStudents">👥 -- students</span>
+                <span id="courseLessons">📚 -- lessons</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="padding-bottom: var(--space-3xl);">
+    <div class="course-detail-grid">
+        <!-- Main Content -->
+        <div>
+            <!-- What You'll Learn -->
+            <div style="background: white; border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-lg); border: 1px solid var(--gray-100);">
+                <h2 style="font-size: 1.5rem; margin-bottom: var(--space-lg);">What You'll Learn</h2>
+                <div class="grid grid-2" style="gap: var(--space-sm);" id="learningPoints">
+                    <div style="display: flex; gap: var(--space-sm); align-items: start;">
+                        <span style="color: var(--primary-500);">✓</span> Comprehensive course content
+                    </div>
+                    <div style="display: flex; gap: var(--space-sm); align-items: start;">
+                        <span style="color: var(--primary-500);">✓</span> Hands-on projects & exercises
+                    </div>
+                    <div style="display: flex; gap: var(--space-sm); align-items: start;">
+                        <span style="color: var(--primary-500);">✓</span> Certificate of completion
+                    </div>
+                    <div style="display: flex; gap: var(--space-sm); align-items: start;">
+                        <span style="color: var(--primary-500);">✓</span> Lifetime access to content
+                    </div>
+                </div>
+            </div>
+
+            <!-- Curriculum -->
+            <div style="margin-bottom: var(--space-lg);">
+                <h2 style="font-size: 1.5rem; margin-bottom: var(--space-lg);">Course Curriculum</h2>
+                <div class="accordion" id="curriculum">
+                    <div class="empty-state">
+                        <p>Loading curriculum...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews -->
+            <div>
+                <h2 style="font-size: 1.5rem; margin-bottom: var(--space-lg);">Student Reviews</h2>
+                <div id="reviewsList">
+                    <div class="empty-state">
+                        <p>Loading reviews...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="course-sidebar">
+            <div class="sidebar-card">
+                <div id="sidebarThumbnail" style="width: 100%; height: 200px; background: var(--primary-100); display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                    🎓
+                </div>
+                <div class="sidebar-body">
+                    <div class="sidebar-price" id="sidebarPrice">$0.00</div>
+                    <button class="btn btn-primary btn-lg" style="width: 100%; margin-bottom: var(--space-md);" id="enrollBtn" onclick="enrollCourse()">
+                        Enroll Now
+                    </button>
+                    <ul class="sidebar-features">
+                        <li><span class="feature-icon-sm">📚</span> <span id="sidebarLessons">-- Lessons</span></li>
+                        <li><span class="feature-icon-sm">⏱️</span> <span id="sidebarDuration">-- Hours</span></li>
+                        <li><span class="feature-icon-sm">👥</span> <span id="sidebarStudents">-- Students</span></li>
+                        <li><span class="feature-icon-sm">📱</span> Mobile-friendly</li>
+                        <li><span class="feature-icon-sm">🏆</span> Certificate of completion</li>
+                        <li><span class="feature-icon-sm">♾️</span> Lifetime access</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let courseData = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Extract slug from URL
+    const slug = window.location.pathname.split('/courses/')[1]?.replace('/', '');
+    if (slug) {
+        loadCourse(slug);
+    }
+});
+
+async function loadCourse(slug) {
+    try {
+        const response = await fetch(`/api/courses/${slug}/`);
+        if (!response.ok) throw new Error('Course not found');
+        courseData = await response.json();
+        renderCourse(courseData);
+        loadReviews(courseData.id);
+    } catch (err) {
+        document.getElementById('courseTitle').textContent = 'Course Not Found';
+        document.getElementById('courseDescription').textContent = 'The course you are looking for does not exist.';
+    }
+}
+
+function renderCourse(course) {
+    document.title = `${course.title} — Coursify`;
+    document.getElementById('courseTitle').textContent = course.title;
+    document.getElementById('courseDescription').textContent = course.description;
+    document.getElementById('courseCategory').textContent = course.category;
+    document.getElementById('courseInstructor').textContent = `👤 ${course.instructor_name}`;
+    document.getElementById('courseRating').textContent = `⭐ ${course.average_rating}`;
+    document.getElementById('courseStudents').textContent = `👥 ${course.students_count} students`;
+    document.getElementById('courseLessons').textContent = `📚 ${course.total_lessons} lessons`;
+
+    // Sidebar
+    const price = parseFloat(course.price);
+    document.getElementById('sidebarPrice').textContent = price === 0 ? 'Free' : `$${price.toFixed(2)}`;
+    document.getElementById('sidebarPrice').className = price === 0 ? 'sidebar-price' : 'sidebar-price';
+    document.getElementById('sidebarLessons').textContent = `${course.total_lessons} Lessons`;
+    document.getElementById('sidebarDuration').textContent = `${Math.round((course.total_duration || 0) / 3600)} Hours`;
+    document.getElementById('sidebarStudents').textContent = `${course.students_count} Students`;
+
+    if (course.thumbnail) {
+        document.getElementById('sidebarThumbnail').innerHTML = `<img src="${course.thumbnail}" style="width:100%; height:200px; object-fit:cover;">`;
+    }
+
+    // Enroll button text
+    if (price === 0) {
+        document.getElementById('enrollBtn').textContent = 'Enroll for Free';
+    }
+
+    // Curriculum
+    if (course.sections && course.sections.length > 0) {
+        const curriculumHtml = course.sections.map((section, i) => `
+            <div class="accordion-item ${i === 0 ? 'open' : ''}">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>${section.title} <span style="font-weight: 400; color: var(--gray-500); font-size: 0.8125rem;">(${section.lesson_count} lessons)</span></span>
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="accordion-body">
+                    ${section.lessons.map(lesson => `
+                        <div class="lesson-item">
+                            <div class="lesson-info">
+                                <span style="color: var(--gray-400);">▶</span>
+                                <span>${lesson.title}</span>
+                            </div>
+                            <div class="lesson-meta">
+                                ${lesson.is_preview ? '<span class="preview-tag">Preview</span>' : ''}
+                                <span>${lesson.duration_formatted}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+        document.getElementById('curriculum').innerHTML = curriculumHtml;
+    } else {
+        document.getElementById('curriculum').innerHTML = `
+            <div class="empty-state">
+                <p style="color: var(--gray-500);">Curriculum coming soon</p>
+            </div>
+        `;
+    }
+}
+
+function toggleAccordion(btn) {
+    const item = btn.parentElement;
+    item.classList.toggle('open');
+}
+
+async function loadReviews(courseId) {
+    try {
+        const response = await fetch(`/api/reviews/?course=${courseId}`);
+        const data = await response.json();
+        const reviews = data.results || data;
+        
+        if (reviews.length === 0) {
+            document.getElementById('reviewsList').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">💬</div>
+                    <h3>No reviews yet</h3>
+                    <p>Be the first to review this course!</p>
+                </div>
+            `;
+            return;
+        }
+
+        document.getElementById('reviewsList').innerHTML = reviews.map(r => `
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-avatar">${r.username.charAt(0).toUpperCase()}</div>
+                    <div>
+                        <div class="review-name">${r.username}</div>
+                        <div class="star-rating">${'⭐'.repeat(r.rating)}</div>
+                    </div>
+                </div>
+                <div class="review-body">
+                    <p>${r.comment || 'Great course!'}</p>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        document.getElementById('reviewsList').innerHTML = '<p style="color: var(--gray-500);">Unable to load reviews</p>';
+    }
+}
+
+async function enrollCourse() {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        window.location.href = '/login/';
+        return;
+    }
+
+    const btn = document.getElementById('enrollBtn');
+    btn.textContent = 'Enrolling...';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/api/enrollments/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ course_id: courseData.id }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            btn.textContent = '✓ Enrolled!';
+            btn.style.background = 'var(--success)';
+            showToast('Successfully enrolled! Start learning now.');
+        } else {
+            btn.textContent = result.detail || 'Already Enrolled';
+            btn.disabled = false;
+        }
+    } catch (err) {
+        btn.textContent = 'Enroll Now';
+        btn.disabled = false;
+        showToast('Something went wrong. Please try again.');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Instructor Dashboard — Coursify{% endblock %}
+{% block nav_instructor %}active{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>🎓 Instructor Dashboard</h1>
+            <p>Manage your courses, track students, and grow your impact</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stat-cards">
+            <div class="stat-card animate-in">
+                <div class="stat-icon green">📚</div>
+                <div class="stat-info">
+                    <h3 id="instrCourses">--</h3>
+                    <p>Total Courses</p>
+                </div>
+            </div>
+            <div class="stat-card animate-in">
+                <div class="stat-icon blue">👥</div>
+                <div class="stat-info">
+                    <h3 id="instrStudents">--</h3>
+                    <p>Total Students</p>
+                </div>
+            </div>
+            <div class="stat-card animate-in">
+                <div class="stat-icon orange">💰</div>
+                <div class="stat-info">
+                    <h3 id="instrRevenue">$--</h3>
+                    <p>Total Revenue</p>
+                </div>
+            </div>
+            <div class="stat-card animate-in">
+                <div class="stat-icon purple">⭐</div>
+                <div class="stat-info">
+                    <h3 id="instrRating">--</h3>
+                    <p>Average Rating</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+            <h2 style="font-size: 1.5rem;">My Courses</h2>
+            <button class="btn btn-primary" onclick="showCreateCourse()">+ Create Course</button>
+        </div>
+
+        <!-- Create Course Form (hidden by default) -->
+        <div id="createCourseForm" style="display: none; background: white; border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-xl); border: 2px solid var(--primary-200);">
+            <h3 style="margin-bottom: var(--space-lg);">Create New Course</h3>
+            <form onsubmit="createCourse(event)">
+                <div class="form-group">
+                    <label class="form-label">Course Title</label>
+                    <input type="text" class="form-control" id="newTitle" placeholder="e.g., Complete Python Masterclass" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" id="newDescription" placeholder="Describe what students will learn..." required></textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                    <div class="form-group">
+                        <label class="form-label">Price ($)</label>
+                        <input type="number" class="form-control" id="newPrice" placeholder="0.00" step="0.01" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-control form-select" id="newCategory">
+                            <option value="development">Development</option>
+                            <option value="design">Design</option>
+                            <option value="business">Business</option>
+                            <option value="marketing">Marketing</option>
+                            <option value="music">Music</option>
+                            <option value="photography">Photography</option>
+                            <option value="health">Health & Fitness</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: var(--space-md);">
+                    <button type="submit" class="btn btn-primary">Create Course</button>
+                    <button type="button" class="btn btn-ghost" onclick="hideCreateCourse()">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Courses List -->
+        <div id="instrCoursesList">
+            <div class="empty-state">
+                <div class="empty-icon">📚</div>
+                <h3>Loading your courses...</h3>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.id) {
+        window.location.href = '/login/';
+        return;
+    }
+    loadInstructorDashboard();
+    loadInstructorCourses();
+});
+
+async function loadInstructorDashboard() {
+    const token = localStorage.getItem('access_token');
+    try {
+        const response = await fetch('/api/accounts/dashboard/instructor/', {
+            headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('instrCourses').textContent = data.total_courses;
+            document.getElementById('instrStudents').textContent = data.total_students;
+            document.getElementById('instrRevenue').textContent = `$${data.total_revenue.toFixed(2)}`;
+            document.getElementById('instrRating').textContent = data.average_rating;
+        }
+    } catch (err) {}
+}
+
+async function loadInstructorCourses() {
+    const token = localStorage.getItem('access_token');
+    try {
+        const response = await fetch('/api/courses/', {
+            headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (response.ok) {
+            const data = await response.json();
+            const courses = data.results || data;
+
+            if (courses.length === 0) {
+                document.getElementById('instrCoursesList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📚</div>
+                        <h3>No courses created yet</h3>
+                        <p>Create your first course and start teaching!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            document.getElementById('instrCoursesList').innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+                    ${courses.map(c => `
+                        <div class="card" style="display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--space-lg);">
+                            <div style="width: 120px; height: 80px; background: var(--primary-100); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: var(--space-md);">
+                                ${c.thumbnail ? `<img src="${c.thumbnail}" style="width:120px; height:80px; object-fit:cover; border-radius: var(--radius-md);">` : '🎓'}
+                            </div>
+                            <div style="padding: var(--space-md) 0;">
+                                <h3 style="font-size: 1.0625rem; margin-bottom: 0.25rem;">${c.title}</h3>
+                                <div style="display: flex; gap: var(--space-lg); font-size: 0.8125rem; color: var(--gray-500);">
+                                    <span>${c.is_published ? '🟢 Published' : '🟡 Draft'}</span>
+                                    <span>⭐ ${c.average_rating || 0}</span>
+                                    <span>👥 ${c.students_count || 0} students</span>
+                                    <span>💰 $${parseFloat(c.price).toFixed(2)}</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: var(--space-sm); padding: var(--space-md);">
+                                <a href="/courses/${c.slug}/" class="btn btn-ghost btn-sm">View</a>
+                                <button class="btn btn-secondary btn-sm" onclick="togglePublish('${c.slug}')">
+                                    ${c.is_published ? 'Unpublish' : 'Publish'}
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+    } catch (err) {}
+}
+
+function showCreateCourse() {
+    document.getElementById('createCourseForm').style.display = 'block';
+    document.getElementById('createCourseForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+function hideCreateCourse() {
+    document.getElementById('createCourseForm').style.display = 'none';
+}
+
+async function createCourse(e) {
+    e.preventDefault();
+    const token = localStorage.getItem('access_token');
+
+    const data = {
+        title: document.getElementById('newTitle').value,
+        description: document.getElementById('newDescription').value,
+        price: document.getElementById('newPrice').value || '0',
+        category: document.getElementById('newCategory').value,
+    };
+
+    try {
+        const response = await fetch('/api/courses/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+            showToast('Course created successfully!');
+            hideCreateCourse();
+            loadInstructorCourses();
+            loadInstructorDashboard();
+        } else {
+            const result = await response.json();
+            showToast('Error: ' + JSON.stringify(result));
+        }
+    } catch (err) {
+        showToast('Network error. Please try again.');
+    }
+}
+
+async function togglePublish(slug) {
+    const token = localStorage.getItem('access_token');
+    try {
+        const response = await fetch(`/api/courses/${slug}/publish/`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (response.ok) {
+            const result = await response.json();
+            showToast(result.detail);
+            loadInstructorCourses();
+        }
+    } catch (err) {
+        showToast('Failed to update. Please try again.');
+    }
+}
+</script>
+{% endblock %}

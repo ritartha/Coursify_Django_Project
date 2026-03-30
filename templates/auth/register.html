@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up — Coursify</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <a href="/" class="logo">🎓 Coursify</a>
+            <h2>Create Account</h2>
+            <p>Start your learning journey today</p>
+        </div>
+
+        <div id="registerAlert"></div>
+
+        <form id="registerForm" onsubmit="handleRegister(event)">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                <div class="form-group">
+                    <label class="form-label" for="firstName">First Name</label>
+                    <input type="text" class="form-control" id="firstName" placeholder="John" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="lastName">Last Name</label>
+                    <input type="text" class="form-control" id="lastName" placeholder="Doe" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="regUsername">Username</label>
+                <input type="text" class="form-control" id="regUsername" placeholder="johndoe" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="regEmail">Email</label>
+                <input type="email" class="form-control" id="regEmail" placeholder="john@example.com" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="role">I want to</label>
+                <select class="form-control form-select" id="role">
+                    <option value="student">Learn (Student)</option>
+                    <option value="instructor">Teach (Instructor)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="regPassword">Password</label>
+                <input type="password" class="form-control" id="regPassword" placeholder="Min. 8 characters" required minlength="8">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="regPassword2">Confirm Password</label>
+                <input type="password" class="form-control" id="regPassword2" placeholder="Confirm password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;" id="registerSubmit">
+                Create Account
+            </button>
+        </form>
+
+        <div class="auth-divider">or sign up with</div>
+
+        <div class="social-buttons">
+            <button class="social-btn" type="button">
+                <span style="font-size: 1.25rem;">G</span> Google
+            </button>
+            <button class="social-btn" type="button">
+                <span style="font-size: 1.25rem;">f</span> Facebook
+            </button>
+        </div>
+
+        <div class="auth-footer">
+            Already have an account? <a href="/login/">Log In</a>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+async function handleRegister(e) {
+    e.preventDefault();
+    const btn = document.getElementById('registerSubmit');
+    btn.textContent = 'Creating Account...';
+    btn.disabled = true;
+
+    const password = document.getElementById('regPassword').value;
+    const password2 = document.getElementById('regPassword2').value;
+
+    if (password !== password2) {
+        document.getElementById('registerAlert').innerHTML = `
+            <div class="alert alert-error">⚠️ Passwords do not match.</div>
+        `;
+        btn.textContent = 'Create Account';
+        btn.disabled = false;
+        return;
+    }
+
+    const data = {
+        first_name: document.getElementById('firstName').value,
+        last_name: document.getElementById('lastName').value,
+        username: document.getElementById('regUsername').value,
+        email: document.getElementById('regEmail').value,
+        role: document.getElementById('role').value,
+        password: password,
+        password2: password2,
+    };
+
+    try {
+        const response = await fetch('/api/accounts/register/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            localStorage.setItem('access_token', result.tokens.access);
+            localStorage.setItem('refresh_token', result.tokens.refresh);
+            localStorage.setItem('user', JSON.stringify(result.user));
+            
+            if (result.user.role === 'instructor') {
+                window.location.href = '/instructor/';
+            } else {
+                window.location.href = '/dashboard/';
+            }
+        } else {
+            let msg = '';
+            for (const [key, value] of Object.entries(result)) {
+                msg += `${Array.isArray(value) ? value.join(', ') : value}<br>`;
+            }
+            document.getElementById('registerAlert').innerHTML = `
+                <div class="alert alert-error">⚠️ ${msg}</div>
+            `;
+        }
+    } catch (err) {
+        document.getElementById('registerAlert').innerHTML = `
+            <div class="alert alert-error">⚠️ Network error. Please try again.</div>
+        `;
+    } finally {
+        btn.textContent = 'Create Account';
+        btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>

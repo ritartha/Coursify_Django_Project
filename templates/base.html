@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Coursify — Learn new skills online with expert-led video courses. Start your learning journey today.">
+    <title>{% block title %}Coursify — Online Learning Platform{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="/" class="navbar-brand">
+                <div class="logo-icon">C</div>
+                Coursify
+            </a>
+
+            <button class="nav-toggle" onclick="toggleNav()" aria-label="Toggle navigation">☰</button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="/" class="{% block nav_home %}{% endblock %}">Home</a>
+                <a href="/courses/" class="{% block nav_courses %}{% endblock %}">Courses</a>
+                <a href="/dashboard/" class="{% block nav_dashboard %}{% endblock %}">Dashboard</a>
+                <a href="/instructor/" class="{% block nav_instructor %}{% endblock %}">Teach</a>
+            </div>
+
+            <div class="nav-actions" id="navActions">
+                <div id="authButtons">
+                    <a href="/login/" class="btn btn-ghost" id="loginBtn">Log In</a>
+                    <a href="/register/" class="btn btn-primary" id="registerBtn">Sign Up</a>
+                </div>
+                <div id="userMenu" style="display: none;">
+                    <span id="userName" style="font-weight: 600; color: var(--gray-700); margin-right: 0.5rem;"></span>
+                    <button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Alert Messages -->
+    <div id="alertContainer" style="position: fixed; top: 80px; right: 1rem; z-index: 9999; max-width: 400px;"></div>
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand">🎓 Coursify</div>
+                    <p class="footer-desc">
+                        Empowering learners worldwide with expert-led online courses. 
+                        Start your learning journey today and unlock your potential.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Twitter">𝕏</a>
+                        <a href="#" aria-label="LinkedIn">in</a>
+                        <a href="#" aria-label="GitHub">⌨</a>
+                        <a href="#" aria-label="YouTube">▶</a>
+                    </div>
+                </div>
+                <div>
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="/courses/">Browse Courses</a></li>
+                        <li><a href="/instructor/">Become an Instructor</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">FAQs</a></li>
+                        <li><a href="#">Community</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                        <li><a href="#">Refund Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Coursify. All rights reserved.</p>
+                <p>Made with 💚 for learners everywhere</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

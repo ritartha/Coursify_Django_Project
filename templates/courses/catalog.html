@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Browse Courses — Coursify{% endblock %}
+{% block nav_courses %}active{% endblock %}
+
+{% block content %}
+<div class="catalog-page">
+    <div class="container">
+        <div class="catalog-header">
+            <h1>Browse Courses</h1>
+            <p style="color: var(--gray-500);">Discover courses taught by industry experts</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" class="form-control" id="searchInput" placeholder="🔍 Search courses by title, topic, or instructor..." onkeyup="debounceSearch()">
+            <button class="btn btn-primary" onclick="searchCourses()">Search</button>
+        </div>
+
+        <div class="catalog-grid">
+            <!-- Filter Sidebar -->
+            <div class="filter-sidebar">
+                <h3>Filters</h3>
+                
+                <div class="filter-group">
+                    <h4>Category</h4>
+                    <label><input type="radio" name="category" value="" checked onchange="applyFilters()"> All Categories</label>
+                    <label><input type="radio" name="category" value="development" onchange="applyFilters()"> Development</label>
+                    <label><input type="radio" name="category" value="design" onchange="applyFilters()"> Design</label>
+                    <label><input type="radio" name="category" value="business" onchange="applyFilters()"> Business</label>
+                    <label><input type="radio" name="category" value="marketing" onchange="applyFilters()"> Marketing</label>
+                    <label><input type="radio" name="category" value="music" onchange="applyFilters()"> Music</label>
+                    <label><input type="radio" name="category" value="photography" onchange="applyFilters()"> Photography</label>
+                    <label><input type="radio" name="category" value="health" onchange="applyFilters()"> Health</label>
+                </div>
+
+                <div class="filter-group">
+                    <h4>Price</h4>
+                    <label><input type="radio" name="price" value="" checked onchange="applyFilters()"> All</label>
+                    <label><input type="radio" name="price" value="free" onchange="applyFilters()"> Free</label>
+                    <label><input type="radio" name="price" value="paid" onchange="applyFilters()"> Paid</label>
+                </div>
+
+                <div class="filter-group">
+                    <h4>Sort By</h4>
+                    <select class="form-control form-select" id="sortBy" onchange="applyFilters()">
+                        <option value="-created_at">Newest First</option>
+                        <option value="created_at">Oldest First</option>
+                        <option value="price">Price: Low to High</option>
+                        <option value="-price">Price: High to Low</option>
+                        <option value="title">Title: A-Z</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-secondary" style="width: 100%;" onclick="resetFilters()">
+                    Reset Filters
+                </button>
+            </div>
+
+            <!-- Course Grid -->
+            <div>
+                <div class="grid grid-3" id="courseGrid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-icon">📚</div>
+                        <h3>Loading courses...</h3>
+                    </div>
+                </div>
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let searchTimer;
+let currentPage = 1;
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyFilters();
+});
+
+function debounceSearch() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applyFilters, 500);
+}
+
+function searchCourses() {
+    applyFilters();
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.querySelector('input[name="category"][value=""]').checked = true;
+    document.querySelector('input[name="price"][value=""]').checked = true;
+    document.getElementById('sortBy').value = '-created_at';
+    currentPage = 1;
+    applyFilters();
+}
+
+async function applyFilters(page = 1) {
+    currentPage = page;
+    const search = document.getElementById('searchInput').value;
+    const category = document.querySelector('input[name="category"]:checked').value;
+    const price = document.querySelector('input[name="price"]:checked').value;
+    const ordering = document.getElementById('sortBy').value;
+
+    let url = `/api/courses/?page=${page}&ordering=${ordering}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (category) url += `&category=${category}`;
+    if (price === 'free') url += `&is_free=true`;
+    if (price === 'paid') url += `&is_free=false`;
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const courses = data.results || data;
+        const grid = document.getElementById('courseGrid');
+
+        if (courses.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1/-1;">
+                    <div class="empty-icon">🔍</div>
+                    <h3>No courses found</h3>
+                    <p>Try adjusting your search or filters</p>
+                </div>
+            `;
+            document.getElementById('pagination').innerHTML = '';
+            return;
+        }
+
+        grid.innerHTML = courses.map(c => createCourseCard(c)).join('');
+
+        // Pagination
+        const totalPages = Math.ceil((data.count || courses.length) / 12);
+        let paginationHtml = '';
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHtml += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="applyFilters(${i})">${i}</button>`;
+        }
+        document.getElementById('pagination').innerHTML = paginationHtml;
+
+    } catch (err) {
+        document.getElementById('courseGrid').innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1;">
+                <div class="empty-icon">⚡</div>
+                <h3>Something went wrong</h3>
+                <p>Please try again later</p>
+            </div>
+        `;
+    }
+}
+</script>
+{% endblock %}

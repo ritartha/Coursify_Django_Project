@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In — Coursify</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <a href="/" class="logo">🎓 Coursify</a>
+            <h2>Welcome Back!</h2>
+            <p>Log in to continue your learning journey</p>
+        </div>
+
+        <div id="loginAlert"></div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input type="text" class="form-control" id="username" placeholder="Enter your username" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-lg);">
+                <label class="form-check">
+                    <input type="checkbox"> <span style="font-size: 0.875rem; color: var(--gray-600);">Remember me</span>
+                </label>
+                <a href="#" style="font-size: 0.875rem; font-weight: 600;">Forgot Password?</a>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;" id="loginSubmit">
+                Log In
+            </button>
+        </form>
+
+        <div class="auth-divider">or continue with</div>
+
+        <div class="social-buttons">
+            <button class="social-btn" type="button">
+                <span style="font-size: 1.25rem;">G</span> Google
+            </button>
+            <button class="social-btn" type="button">
+                <span style="font-size: 1.25rem;">f</span> Facebook
+            </button>
+        </div>
+
+        <div class="auth-footer">
+            Don't have an account? <a href="/register/">Sign Up</a>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/main.js' %}"></script>
+<script>
+async function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('loginSubmit');
+    btn.textContent = 'Logging in...';
+    btn.disabled = true;
+
+    const data = {
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value,
+    };
+
+    try {
+        const response = await fetch('/api/accounts/login/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            localStorage.setItem('access_token', result.tokens.access);
+            localStorage.setItem('refresh_token', result.tokens.refresh);
+            localStorage.setItem('user', JSON.stringify(result.user));
+            
+            // Redirect based on role
+            if (result.user.role === 'instructor') {
+                window.location.href = '/instructor/';
+            } else {
+                window.location.href = '/dashboard/';
+            }
+        } else {
+            const msg = result.non_field_errors?.[0] || result.detail || 'Login failed. Please try again.';
+            document.getElementById('loginAlert').innerHTML = `
+                <div class="alert alert-error">⚠️ ${msg}</div>
+            `;
+        }
+    } catch (err) {
+        document.getElementById('loginAlert').innerHTML = `
+            <div class="alert alert-error">⚠️ Network error. Please try again.</div>
+        `;
+    } finally {
+        btn.textContent = 'Log In';
+        btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>
