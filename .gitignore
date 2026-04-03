@@ -1,3 +1,11 @@
 .env
 *.sqlite3
 staticfiles/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+media/
+*.egg-info/
+dist/
+build/
