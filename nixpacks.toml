@@ -1,2 +1,7 @@
 [phases.setup]
-nixPkgs = ["cairo", "pkg-config", "python313", "xorg.libxcb", "gcc"]
+nixPkgs = ["cairo", "xorg.libxcb", "gcc", "pkg-config", "python313"]
+
+[phases.install]
+cmds = [
+  "python -m venv --copies /opt/venv && . /opt/venv/bin/activate && pip install pycairo==1.29.0 && pip install -r requirements.txt"
+]
