@@ -1,11 +1,2 @@
 [phases.setup]
-aptPkgs = [
-  "libcairo2-dev",
-  "libxcb1-dev",
-  "libxcb-render0-dev",
-  "libxcb-shm0-dev",
-  "pkg-config",
-  "python3-dev",
-  "libffi-dev",
-  "libglib2.0-dev"
-]
+nixPkgs = ["cairo", "xcb-util", "xorg.libxcb", "pkg-config", "python313"]
