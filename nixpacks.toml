@@ -1,2 +1,2 @@
 [phases.setup]
-nixPkgs = ["cairo", "xcb-util", "xorg.libxcb", "pkg-config", "python313"]
+nixPkgs = ["cairo", "pkg-config", "python313", "xorg.libxcb"]
