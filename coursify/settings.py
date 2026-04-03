@@ -4,14 +4,20 @@ Django settings for Coursify - Online Course Platform.
 
 from pathlib import Path
 from datetime import timedelta
+import dj_database_url
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-25ksm^r#8v1p3i9y!15g0rz%**riugi9gvoi_=_oqw^trhkn5)'
+# ─── Core ─────────────────────────────────────────────────────────────────────
 
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+PRODUCTION = os.getenv('PRODUCTION', 'False') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 # ─── Application Definition ───────────────────────────────────────────────────
 
@@ -69,12 +75,21 @@ WSGI_APPLICATION = 'coursify.wsgi.application'
 
 # ─── Database ──────────────────────────────────────────────────────────────────
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if not PRODUCTION:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
 
 # ─── Password Validation ──────────────────────────────────────────────────────
 
@@ -136,8 +151,8 @@ REST_FRAMEWORK = {
 # ─── SimpleJWT ─────────────────────────────────────────────────────────────────
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', 60))),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.getenv('JWT_REFRESH_TOKEN_LIFETIME_DAYS', 7))),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
@@ -145,4 +160,7 @@ SIMPLE_JWT = {
 
 # ─── CORS ──────────────────────────────────────────────────────────────────────
 
-CORS_ALLOW_ALL_ORIGINS = True  # Restrict in production
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False') == 'True'
+
+if not CORS_ALLOW_ALL_ORIGINS:
+    CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
